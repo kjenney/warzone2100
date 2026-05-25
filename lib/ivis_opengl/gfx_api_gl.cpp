@@ -1181,9 +1181,9 @@ desc(createInfo.state_desc), vertex_buffer_desc(createInfo.attribute_description
 		// > have been previously declared.
 #if defined(__EMSCRIPTEN__)
 		vertexShaderHeader += "precision highp float;\n";
-		fragmentShaderHeader += "precision highp float;precision highp int;\n";
+		fragmentShaderHeader += "precision highp float;precision highp int;precision highp uint;\n";
 #else
-		fragmentShaderHeader += "#if GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\nprecision highp int;\n#else\nprecision mediump float;\n#endif\n";
+		fragmentShaderHeader += "#if GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\nprecision highp int;\nprecision highp uint;\n#else\nprecision mediump float;\n#endif\n";
 #endif
 		fragmentShaderHeader += "#if __VERSION__ >= 300 || defined(GL_EXT_texture_array)\nprecision lowp sampler2DArray;\n#endif\n";
 		fragmentShaderHeader += "#if __VERSION__ >= 300\nprecision lowp sampler2DShadow;\nprecision lowp sampler2DArrayShadow;\n#endif\n";
@@ -1647,7 +1647,7 @@ static void patchFragmentShaderTextureLodBias(std::string& fragmentShaderStr, fl
 	// #define WZ_MIP_LOAD_BIAS 0.f
 	const auto re = std::regex("#define WZ_MIP_LOAD_BIAS .*", std::regex_constants::ECMAScript);
 
-	std::string floatAsString = astringf("%f", static_cast<double>(mipLodBias));
+	std::string floatAsString = fmt::format("{:f}", static_cast<double>(mipLodBias));
 	size_t lastNon0Pos = floatAsString.find_last_not_of('0');
 	if (lastNon0Pos != std::string::npos)
 	{
