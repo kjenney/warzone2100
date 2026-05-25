@@ -11,10 +11,20 @@ freebsd_build_task:
 #    cpu: 4
 #    memory: 8G
 
+  env:
+    CCACHE_DIR: ${CIRRUS_WORKING_DIR}/.ccache
+    CCACHE_MAXSIZE: 3G
+    CCACHE_BASEDIR: ${CIRRUS_WORKING_DIR}
+    CCACHE_SLOPPINESS: time_macros
+
+  ccache_cache:
+    folder: ${CIRRUS_WORKING_DIR}/.ccache
+    fingerprint_script: echo "freebsd-${CIRRUS_BRANCH}"
+
   install_script:
     - pkg update -f
     - pkg clean -a -y
-    - pkg install -y git cmake ninja 7-zip gettext pkgconf png sdl3 openal-soft physfs libvorbis libogg opus libtheora freetype2 fribidi harfbuzz curl libsodium sqlite3 libzip protobuf rubygem-asciidoctor
+    - pkg install -y git cmake ninja 7-zip gettext pkgconf png sdl3 openal-soft physfs libvorbis libogg opus libtheora freetype2 fribidi harfbuzz curl libsodium sqlite3 libzip protobuf rubygem-asciidoctor ccache
 
   init_git_submodules_script: git submodule update --init --recursive
 
@@ -22,5 +32,8 @@ freebsd_build_task:
 #  build_debug_script: cmake --build build/debug
 #  clear_debug_build_script: rm -rf build/debug
 
-  configure_release_script: cmake '-H.' -Bbuild/release -DCMAKE_BUILD_TYPE=RelWithDebInfo -G"Ninja"
-  build_release_script: cmake --build build/release
+  configure_release_script: cmake '-H.' -Bbuild/release -DCMAKE_BUILD_TYPE=RelWithDebInfo -G"Ninja" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  build_release_script:
+    - ccache --zero-stats
+    - cmake --build build/release
+    - ccache --show-stats
