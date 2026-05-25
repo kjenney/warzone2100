@@ -9,12 +9,12 @@
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:allowBackup="false"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-        android:attributionTag="net.wz2100.wz">
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
         <activity
             android:name="net.wz2100.wz.WZActivity"
             android:label="@string/app_name"
+            android:attributionTag="net.wz2100.wz"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|screenLayout|uiMode|smallestScreenSize|density"
             android:exported="true"
