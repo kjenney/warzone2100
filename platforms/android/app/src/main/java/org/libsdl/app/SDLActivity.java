@@ -1086,9 +1086,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native boolean nativeAllowRecreateActivity();
     public static native int nativeCheckSDLThreadCounter();
     public static native void onNativeFileDialog(int requestCode, String[] filelist, int filter);
-    public static native void onNativePinchStart();
-    public static native void onNativePinchUpdate(float scale);
-    public static native void onNativePinchEnd();
+    public static native void onNativeWZPinchStart();
+    public static native void onNativeWZPinchUpdate(float scale);
+    public static native void onNativeWZPinchEnd();
 
     /**
      * This method is called by SDL using JNI.

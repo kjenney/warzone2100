@@ -4004,7 +4004,7 @@ static bool pinchActive = false;
 
 extern "C" {
 
-JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativePinchStart(JNIEnv*, jclass)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeWZPinchStart(JNIEnv*, jclass)
 {
 	wzAsyncExecOnMainThread([]() {
 		pinchInitialViewDistance = getViewDistance();
@@ -4013,7 +4013,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativePinchStart(JNIEnv
 	});
 }
 
-JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativePinchUpdate(JNIEnv*, jclass, jfloat scale)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeWZPinchUpdate(JNIEnv*, jclass, jfloat scale)
 {
 	const float scaleFactor = static_cast<float>(scale);
 	wzAsyncExecOnMainThread([scaleFactor]() {
@@ -4027,7 +4027,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativePinchUpdate(JNIEn
 	});
 }
 
-JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativePinchEnd(JNIEnv*, jclass)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeWZPinchEnd(JNIEnv*, jclass)
 {
 	wzAsyncExecOnMainThread([]() {
 		pinchActive = false;
