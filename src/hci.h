@@ -118,7 +118,7 @@ enum  				  // Reticule button indecies.
 
 // Object screen position. (aka where the factories, research builds show up) [right of command retile]
 #define BASE_GAP		6
-#define OBJ_BACKWIDTH	320	//316		// Width of object screen back form.
+#define OBJ_BACKWIDTH	(pie_GetVideoBufferWidth() / 4)	// 25% of screen width
 #define OBJ_BACKHEIGHT	115		// Height of object screen back form.
 #define OBJ_BACKX		(RET_X + RET_FORMWIDTH + BASE_GAP + D_W)	// X coord of object screen back form.
 #define OBJ_BACKY		RET_Y	// Y coord of object screen back form.
@@ -130,7 +130,7 @@ enum  				  // Reticule button indecies.
 
 /* Build screen positions */
 #define OBJ_TABY		6	// Y coord of object screen tab form.
-#define OBJ_WIDTH		316	//312//310	// Width of object screen tab form.
+#define OBJ_WIDTH		(OBJ_BACKWIDTH - 4)	// Width of object screen tab form.
 #define OBJ_HEIGHT		112	// Height of object screen tab form.
 #define OBJ_GAP			2	// Gap between buttons.
 #define OBJ_STARTX		2	// Offset of first obj button from left of tab form.
