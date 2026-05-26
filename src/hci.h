@@ -118,7 +118,15 @@ enum  				  // Reticule button indecies.
 
 // Object screen position. (aka where the factories, research builds show up) [right of command retile]
 #define BASE_GAP		6
-#define OBJ_BACKWIDTH	(pie_GetVideoBufferWidth() / 4)	// 25% of screen width
+#if defined(__ANDROID__)
+// On Android the logical screen is auto-scaled so pie_GetVideoBufferWidth() / 4 often
+// coincides with the original 320 px constant. Use 1/3 of the logical width instead so
+// the panel is visibly larger; the matching RADTLX change drops the extra D_W gap so
+// the minimap still fits on-screen.
+#define OBJ_BACKWIDTH	(pie_GetVideoBufferWidth() / 3)	// ~33% of screen width
+#else
+#define OBJ_BACKWIDTH	320
+#endif
 #define OBJ_BACKHEIGHT	115		// Height of object screen back form.
 #define OBJ_BACKX		(RET_X + RET_FORMWIDTH + BASE_GAP + D_W)	// X coord of object screen back form.
 #define OBJ_BACKY		RET_Y	// Y coord of object screen back form.

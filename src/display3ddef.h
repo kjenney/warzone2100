@@ -29,7 +29,12 @@
 #define VISIBLE_XTILES 64
 #define VISIBLE_YTILES 64
 
-#define	RADTLX		(OBJ_BACKX + OBJ_BACKWIDTH + BASE_GAP + 1 +D_W)	// Paul's settings (492+12)
+#if defined(__ANDROID__)
+// Drop the extra D_W gap so the wider OBJ panel doesn't push the minimap off-screen.
+#define	RADTLX		(OBJ_BACKX + OBJ_BACKWIDTH + BASE_GAP + 1)
+#else
+#define	RADTLX		(OBJ_BACKX + OBJ_BACKWIDTH + BASE_GAP + 1 + D_W)	// Paul's settings (492+12)
+#endif
 #define	RADTLY		(RET_Y + 1)									// Paul's settings (332-17)
 #define	RADWIDTH	128
 #define RADHEIGHT	128
