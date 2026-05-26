@@ -119,11 +119,10 @@ enum  				  // Reticule button indecies.
 // Object screen position. (aka where the factories, research builds show up) [right of command retile]
 #define BASE_GAP		6
 #if defined(__ANDROID__)
-// On Android the logical screen is auto-scaled so pie_GetVideoBufferWidth() / 4 often
-// coincides with the original 320 px constant. Use 1/3 of the logical width instead so
-// the panel is visibly larger; the matching RADTLX change drops the extra D_W gap so
-// the minimap still fits on-screen.
-#define OBJ_BACKWIDTH	(pie_GetVideoBufferWidth() / 3)	// ~33% of screen width
+// Use 40% of the logical screen width. At ~969px logical (Pixel 9 Pro Fold at 2.5x scale)
+// this gives ~388px, visibly larger than the original 320px. /3 and /4 both happened to
+// round to ~320 on this device, which is why earlier attempts looked unchanged.
+#define OBJ_BACKWIDTH	(pie_GetVideoBufferWidth() * 2 / 5)	// 40% of screen width
 #else
 #define OBJ_BACKWIDTH	320
 #endif
@@ -185,7 +184,12 @@ enum  				  // Reticule button indecies.
 
 #define POWERPOINTS_DROIDDIV	5
 
+#if defined(__ANDROID__)
+// Scale buttons to fill the panel: (panel - 4 gaps of 2px) / 5 columns
+#define OBJ_BUTWIDTH		((OBJ_BACKWIDTH - 8) / 5)
+#else
 #define OBJ_BUTWIDTH		60		// Button width.
+#endif
 #define OBJ_BUTHEIGHT		46		// Button height.
 
 #define OBJ_TEXTX			2
