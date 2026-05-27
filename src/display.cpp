@@ -1142,7 +1142,7 @@ void applySwipeScroll(float deltaX, float deltaY)
 	}
 
 	double scroll_zoom_factor = 1.0 + 2.0 * ((getViewDistance() - MINDISTANCE) / (float)(MAXDISTANCE - MINDISTANCE));
-	float scaleFactor = static_cast<float>(scroll_zoom_factor) * static_cast<float>(war_GetCameraSpeed()) / 200.0f;
+	float scaleFactor = static_cast<float>(scroll_zoom_factor) * static_cast<float>(war_GetCameraSpeed()) / 1000.0f;
 
 	float worldDeltaX = deltaX * scaleFactor;
 	float worldDeltaY = deltaY * scaleFactor;
