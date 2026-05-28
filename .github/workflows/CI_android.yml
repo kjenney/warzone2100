@@ -45,6 +45,15 @@ jobs:
       WZ_GITHUB_REF: ${{ steps.checkout-config.outputs.WZ_GITHUB_REF }}
       WZ_GITHUB_SHA: ${{ steps.checkout-config.outputs.WZ_GITHUB_SHA }}
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo apt-get clean
+          df -h
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
