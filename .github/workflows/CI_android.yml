@@ -54,6 +54,9 @@ jobs:
           sudo apt-get clean
           df -h
 
+      - name: Install ccache
+        run: sudo apt-get update -y && sudo apt-get install -y ccache
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
