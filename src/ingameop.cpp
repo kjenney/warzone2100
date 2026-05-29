@@ -27,6 +27,7 @@
 #include "lib/framework/wzapp.h"
 #include "lib/ivis_opengl/screen.h"
 #include "lib/widget/widget.h"
+#include "lib/widget/button.h"
 #include "lib/widget/label.h"
 #include "lib/netplay/netplay.h"
 #include "lib/sound/audio.h"					// for sound.
@@ -109,6 +110,7 @@ static void addAdaptiveButton(UDWORD id, int row, const char *string, UDWORD Sty
 	sButInit.height   = INTINGAMEOP_OP_H;
 	sButInit.pDisplay = displayTextOption;
 	sButInit.pText    = string;
+	sButInit.FontID   = font_medium; // overridden by calcLayout; avoids tiny text on first frame
 	sButInit.pUserData = new DisplayTextOptionCache();
 	sButInit.onDelete = [](WIDGET *psWidget) {
 		assert(psWidget->pUserData != nullptr);
@@ -122,6 +124,12 @@ static void addAdaptiveButton(UDWORD id, int row, const char *string, UDWORD Sty
 		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
 		int btnH    = lineH - 4;
 		psWidget->setGeometry(5, (row - 1) * lineH + marginH, parent->width() - 10, btnH);
+		// Scale font to match button height so it fills the enlarged button on large screens.
+		auto btn = dynamic_cast<W_BUTTON *>(psWidget);
+		if (btn)
+		{
+			btn->FontID = (btnH >= 36) ? font_large : (btnH >= 26) ? font_medium : font_regular;
+		}
 	};
 	widgAddButton(psWScreen, &sButInit);
 }
