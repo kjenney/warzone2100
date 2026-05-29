@@ -1826,8 +1826,8 @@ bool intAddMissionTimer()
 	sFormInit.id = IDTIMER_FORM;
 	sFormInit.style = WFORM_PLAIN;
 
-	sFormInit.width = iV_GetImageWidth(IntImages, IMAGE_MISSION_CLOCK); //TIMER_WIDTH;
-	sFormInit.height = iV_GetImageHeight(IntImages, IMAGE_MISSION_CLOCK); //TIMER_HEIGHT;
+	sFormInit.width = iV_GetImageWidth(IntImages, IMAGE_MISSION_CLOCK) * 3 / 2;
+	sFormInit.height = iV_GetImageHeight(IntImages, IMAGE_MISSION_CLOCK) * 3 / 2;
 	sFormInit.x = (SWORD)(RADTLX + RADWIDTH - sFormInit.width);
 	sFormInit.y = (SWORD)TIMER_Y;
 	sFormInit.calcLayout = LAMBDA_CALCLAYOUT_SIMPLE({
@@ -1848,8 +1848,9 @@ bool intAddMissionTimer()
 	sLabInit.style = WLAB_PLAIN | WIDG_HIDDEN;
 	sLabInit.x = TIMER_LABELX;
 	sLabInit.y = TIMER_LABELY;
-	sLabInit.width = sFormInit.width;//TIMER_WIDTH;
-	sLabInit.height = sFormInit.height;//TIMER_HEIGHT;
+	sLabInit.width = sFormInit.width;
+	sLabInit.height = sFormInit.height;
+	sLabInit.FontID = font_large;
 	sLabInit.pText = WzString::fromUtf8("00:00:00");
 	sLabInit.pCallback = intUpdateMissionTimer;
 
