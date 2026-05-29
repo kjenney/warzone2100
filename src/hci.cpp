@@ -1113,7 +1113,8 @@ static bool createGameSpeedControlOverlay()
 	gameSpeedOverlayScreen->psForm->attach(speedWidget);
 
 	speedWidget->setCalcLayout([](WIDGET *psWidget) {
-		psWidget->move(SPEED_CTRL_SPACING, SPEED_CTRL_SPACING);
+		int x0 = (screenWidth - psWidget->width()) / 2;
+		psWidget->move(x0, SPEED_CTRL_SPACING);
 	});
 
 	widgRegisterOverlayScreenOnTopOfScreen(gameSpeedOverlayScreen, psWScreen);
