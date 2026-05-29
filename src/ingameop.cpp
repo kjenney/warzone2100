@@ -325,7 +325,7 @@ void intAddInGamePopup()
 	parent->attach(ingamePopup);
 	ingamePopup->id = INTINGAMEPOPUP;
 	ingamePopup->setCalcLayout(LAMBDA_CALCLAYOUT_SIMPLE({
-		psWidget->setGeometry(20 + D_W, (240 - 160 / 2) + D_H, 600, 160);
+		psWidget->setGeometry(20 + D_W, (240 - 220 / 2) + D_H, 680, 220);
 	}));
 
 	// add the text "buttons" now
@@ -333,10 +333,10 @@ void intAddInGamePopup()
 
 	sButInit.formID		= INTINGAMEPOPUP;
 	sButInit.style		= OPALIGN;
-	sButInit.width		= 600;
+	sButInit.width		= 680;
 	sButInit.FontID		= font_large;
 	sButInit.x			= 0;
-	sButInit.height		= 10;
+	sButInit.height		= 14;
 	sButInit.pDisplay	= displayTextOption;
 	sButInit.initPUserDataFunc = []() -> void * { return new DisplayTextOptionCache(); };
 	sButInit.onDelete = [](WIDGET *psWidget) {
@@ -346,19 +346,19 @@ void intAddInGamePopup()
 	};
 
 	sButInit.id			= INTINGAMEOP_POPUP_MSG2;
-	sButInit.y			= 20;
+	sButInit.y			= 28;
 	sButInit.pText		= _("Host has quit the game!");
 
 	widgAddButton(psWScreen, &sButInit);
 
 	sButInit.id			= INTINGAMEOP_POPUP_MSG1;
-	sButInit.y			= 60;
+	sButInit.y			= 84;
 	sButInit.pText		= _("The game can't continue without the host.");
 
 	widgAddButton(psWScreen, &sButInit);
 
 	sButInit.id			= INTINGAMEOP_POPUP_QUIT;
-	sButInit.y			= 124;
+	sButInit.y			= 172;
 	sButInit.pText		= _("-->  QUIT  <--");
 
 	widgAddButton(psWScreen, &sButInit);
