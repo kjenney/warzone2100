@@ -764,13 +764,14 @@ void intDisplayMissionClock(WIDGET *psWidget, UDWORD xOffset, UDWORD yOffset)
 	int x = xOffset + psWidget->x();
 	int y = yOffset + psWidget->y();
 
-	// Draw the background image
-	iV_DrawImage(IntImages, UNPACKDWORD_TRI_B(psWidget->UserData), x, y);
+	// Draw the background image scaled to the widget's dimensions
+	Vector2f timerSize{(float)psWidget->width(), (float)psWidget->height()};
+	iV_DrawImageTint(IntImages, UNPACKDWORD_TRI_B(psWidget->UserData), x, y, pal_RGBA(255, 255, 255, 255), timerSize);
 	// Need to flash the timer when < 5 minutes remaining, but > 4 minutes
 	bool flash = UNPACKDWORD_TRI_A(psWidget->UserData);
 	if (flash && ((realTime / 250) % 2) == 0)
 	{
-		iV_DrawImage(IntImages, UNPACKDWORD_TRI_C(psWidget->UserData), x, y);
+		iV_DrawImageTint(IntImages, UNPACKDWORD_TRI_C(psWidget->UserData), x, y, pal_RGBA(255, 255, 255, 255), timerSize);
 	}
 }
 
