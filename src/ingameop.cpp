@@ -25,6 +25,7 @@
 
 #include "lib/framework/frame.h"
 #include "lib/framework/wzapp.h"
+#include "lib/ivis_opengl/screen.h"
 #include "lib/widget/widget.h"
 #include "lib/widget/label.h"
 #include "lib/netplay/netplay.h"
@@ -92,6 +93,37 @@ static bool addIGTextButton(UDWORD id, UWORD x, UWORD y, UWORD width, const char
 	widgAddButton(psWScreen, &sButInit);
 
 	return true;
+}
+
+// Adds a button to the initial pause menu with screen-adaptive dimensions.
+// Row is 1-based; layout is recalculated on each screen-size change.
+static void addAdaptiveButton(UDWORD id, int row, const char *string, UDWORD Style)
+{
+	W_BUTINIT sButInit;
+	sButInit.formID   = INTINGAMEOP;
+	sButInit.id       = id;
+	sButInit.style    = Style;
+	sButInit.x        = INTINGAMEOP_1_X;
+	sButInit.y        = INTINGAMEOPAUTO_Y_LINE(row);
+	sButInit.width    = INTINGAMEOP_OP_W;
+	sButInit.height   = INTINGAMEOP_OP_H;
+	sButInit.pDisplay = displayTextOption;
+	sButInit.pText    = string;
+	sButInit.pUserData = new DisplayTextOptionCache();
+	sButInit.onDelete = [](WIDGET *psWidget) {
+		assert(psWidget->pUserData != nullptr);
+		delete static_cast<DisplayTextOptionCache *>(psWidget->pUserData);
+		psWidget->pUserData = nullptr;
+	};
+	sButInit.calcLayout = [row](WIDGET *psWidget) {
+		auto parent = psWidget->parent();
+		if (!parent) { return; }
+		int lineH   = std::max((int)INTINGAMEOPLINE_H,  (int)screenHeight / 18);
+		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
+		int btnH    = lineH - 4;
+		psWidget->setGeometry(5, (row - 1) * lineH + marginH, parent->width() - 10, btnH);
+	};
+	widgAddButton(psWScreen, &sButInit);
 }
 
 static bool addHostQuitOptions()
@@ -169,18 +201,18 @@ static bool _intAddInGameOptions()
 
 	int row = 1;
 	// add 'resume'
-	addIGTextButton(INTINGAMEOP_RESUME, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Resume Game"), OPALIGN);
+	addAdaptiveButton(INTINGAMEOP_RESUME, row, _("Resume Game"), OPALIGN);
 	row++;
 
 	if (hasGameGuideTopics())
 	{
 		// add "View Guide"
-		addIGTextButton(INTINGAMEOP_OPENGAMEGUIDE, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("View Guide"), OPALIGN);
+		addAdaptiveButton(INTINGAMEOP_OPENGAMEGUIDE, row, _("View Guide"), OPALIGN);
 		row++;
 	}
 
 	// add 'options'
-	addIGTextButton(INTINGAMEOP_OPTIONS, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Options"), OPALIGN);
+	addAdaptiveButton(INTINGAMEOP_OPTIONS, row, _("Options"), OPALIGN);
 	row++;
 
 	if (!((bMultiPlayer && NetPlay.bComms) || bInTutorial || NETisReplay()))
@@ -188,21 +220,21 @@ static bool _intAddInGameOptions()
 		if (bMultiPlayer)
 		{
 			// add 'load'
-			addIGTextButton(INTINGAMEOP_LOAD_SKIRMISH, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Load Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_LOAD_SKIRMISH, row, _("Load Game"), OPALIGN);
 			row++;
 			// add 'save'
-			addIGTextButton(INTINGAMEOP_SAVE_SKIRMISH, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Save Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_SAVE_SKIRMISH, row, _("Save Game"), OPALIGN);
 			row++;
 		}
 		else
 		{
 			// add 'load'
-			addIGTextButton(INTINGAMEOP_LOAD_MISSION, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Load Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_LOAD_MISSION, row, _("Load Game"), OPALIGN);
 			row++;
 			if (!getCamTweakOption_AutosavesOnly())
 			{
 				// add 'save'
-				addIGTextButton(INTINGAMEOP_SAVE_MISSION, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Save Game"), OPALIGN);
+				addAdaptiveButton(INTINGAMEOP_SAVE_MISSION, row, _("Save Game"), OPALIGN);
 				row++;
 			}
 		}
@@ -211,17 +243,24 @@ static bool _intAddInGameOptions()
 	// add 'quit' text
 	if (NetPlay.isHost && bMultiPlayer && NetPlay.bComms)
 	{
-		addIGTextButton(hostQuitConfirmation ? INTINGAMEOP_HOSTQUIT : INTINGAMEOP_QUIT, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Host Quit"), OPALIGN);
+		addAdaptiveButton(hostQuitConfirmation ? INTINGAMEOP_HOSTQUIT : INTINGAMEOP_QUIT, row, _("Host Quit"), OPALIGN);
 	}
 	else
 	{
-		addIGTextButton(INTINGAMEOP_CONFIRM_QUIT, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Quit"), OPALIGN);
+		addAdaptiveButton(INTINGAMEOP_CONFIRM_QUIT, row, _("Quit"), OPALIGN);
 	}
 
-	// calculate layout
+	// Screen-adaptive layout: scales with screen size so the menu is readable on
+	// large displays (e.g. Android) without being oversized on small ones.
 	int lines = row;
-	ingameOp->setCalcLayout([lines](WIDGET *psWidget){
-		psWidget->setGeometry(INTINGAMEOP_X, INTINGAMEOPAUTO_Y(lines), INTINGAMEOP_W, INTINGAMEOPAUTO_H(lines));
+	ingameOp->setCalcLayout([lines](WIDGET *psWidget) {
+		int menuW   = std::max((int)INTINGAMEOP_W,    (int)screenWidth  / 3);
+		int lineH   = std::max((int)INTINGAMEOPLINE_H,  (int)screenHeight / 18);
+		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
+		int menuH   = lines * lineH + marginH * 2;
+		int menuX   = ((int)screenWidth  - menuW) / 2;
+		int menuY   = ((int)screenHeight - menuH) / 2;
+		psWidget->setGeometry(menuX, menuY, menuW, menuH);
 	});
 
 	intMode		= INT_INGAMEOP;			// change interface mode.
