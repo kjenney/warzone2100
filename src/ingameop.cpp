@@ -25,7 +25,9 @@
 
 #include "lib/framework/frame.h"
 #include "lib/framework/wzapp.h"
+#include "lib/ivis_opengl/screen.h"
 #include "lib/widget/widget.h"
+#include "lib/widget/button.h"
 #include "lib/widget/label.h"
 #include "lib/netplay/netplay.h"
 #include "lib/sound/audio.h"					// for sound.
@@ -92,6 +94,44 @@ static bool addIGTextButton(UDWORD id, UWORD x, UWORD y, UWORD width, const char
 	widgAddButton(psWScreen, &sButInit);
 
 	return true;
+}
+
+// Adds a button to the initial pause menu with screen-adaptive dimensions.
+// Row is 1-based; layout is recalculated on each screen-size change.
+static void addAdaptiveButton(UDWORD id, int row, const char *string, UDWORD Style)
+{
+	W_BUTINIT sButInit;
+	sButInit.formID   = INTINGAMEOP;
+	sButInit.id       = id;
+	sButInit.style    = Style;
+	sButInit.x        = INTINGAMEOP_1_X;
+	sButInit.y        = INTINGAMEOPAUTO_Y_LINE(row);
+	sButInit.width    = INTINGAMEOP_OP_W;
+	sButInit.height   = INTINGAMEOP_OP_H;
+	sButInit.pDisplay = displayTextOption;
+	sButInit.pText    = string;
+	sButInit.FontID   = font_large; // overridden by calcLayout; set large upfront so first frame looks right
+	sButInit.pUserData = new DisplayTextOptionCache();
+	sButInit.onDelete = [](WIDGET *psWidget) {
+		assert(psWidget->pUserData != nullptr);
+		delete static_cast<DisplayTextOptionCache *>(psWidget->pUserData);
+		psWidget->pUserData = nullptr;
+	};
+	sButInit.calcLayout = [row](WIDGET *psWidget) {
+		auto parent = psWidget->parent();
+		if (!parent) { return; }
+		int lineH   = std::max((int)INTINGAMEOPLINE_H,  (int)screenHeight / 18);
+		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
+		int btnH    = lineH - 4;
+		psWidget->setGeometry(5, (row - 1) * lineH + marginH, parent->width() - 10, btnH);
+		// Scale font to match button height so it fills the enlarged button on large screens.
+		auto btn = dynamic_cast<W_BUTTON *>(psWidget);
+		if (btn)
+		{
+			btn->FontID = (btnH >= 36) ? font_large : (btnH >= 26) ? font_medium : font_regular;
+		}
+	};
+	widgAddButton(psWScreen, &sButInit);
 }
 
 static bool addHostQuitOptions()
@@ -169,18 +209,18 @@ static bool _intAddInGameOptions()
 
 	int row = 1;
 	// add 'resume'
-	addIGTextButton(INTINGAMEOP_RESUME, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Resume Game"), OPALIGN);
+	addAdaptiveButton(INTINGAMEOP_RESUME, row, _("Resume Game"), OPALIGN);
 	row++;
 
 	if (hasGameGuideTopics())
 	{
 		// add "View Guide"
-		addIGTextButton(INTINGAMEOP_OPENGAMEGUIDE, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("View Guide"), OPALIGN);
+		addAdaptiveButton(INTINGAMEOP_OPENGAMEGUIDE, row, _("View Guide"), OPALIGN);
 		row++;
 	}
 
 	// add 'options'
-	addIGTextButton(INTINGAMEOP_OPTIONS, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Options"), OPALIGN);
+	addAdaptiveButton(INTINGAMEOP_OPTIONS, row, _("Options"), OPALIGN);
 	row++;
 
 	if (!((bMultiPlayer && NetPlay.bComms) || bInTutorial || NETisReplay()))
@@ -188,21 +228,21 @@ static bool _intAddInGameOptions()
 		if (bMultiPlayer)
 		{
 			// add 'load'
-			addIGTextButton(INTINGAMEOP_LOAD_SKIRMISH, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Load Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_LOAD_SKIRMISH, row, _("Load Game"), OPALIGN);
 			row++;
 			// add 'save'
-			addIGTextButton(INTINGAMEOP_SAVE_SKIRMISH, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Save Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_SAVE_SKIRMISH, row, _("Save Game"), OPALIGN);
 			row++;
 		}
 		else
 		{
 			// add 'load'
-			addIGTextButton(INTINGAMEOP_LOAD_MISSION, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Load Game"), OPALIGN);
+			addAdaptiveButton(INTINGAMEOP_LOAD_MISSION, row, _("Load Game"), OPALIGN);
 			row++;
 			if (!getCamTweakOption_AutosavesOnly())
 			{
 				// add 'save'
-				addIGTextButton(INTINGAMEOP_SAVE_MISSION, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Save Game"), OPALIGN);
+				addAdaptiveButton(INTINGAMEOP_SAVE_MISSION, row, _("Save Game"), OPALIGN);
 				row++;
 			}
 		}
@@ -211,18 +251,28 @@ static bool _intAddInGameOptions()
 	// add 'quit' text
 	if (NetPlay.isHost && bMultiPlayer && NetPlay.bComms)
 	{
-		addIGTextButton(hostQuitConfirmation ? INTINGAMEOP_HOSTQUIT : INTINGAMEOP_QUIT, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Host Quit"), OPALIGN);
+		addAdaptiveButton(hostQuitConfirmation ? INTINGAMEOP_HOSTQUIT : INTINGAMEOP_QUIT, row, _("Host Quit"), OPALIGN);
 	}
 	else
 	{
-		addIGTextButton(INTINGAMEOP_CONFIRM_QUIT, INTINGAMEOP_1_X, INTINGAMEOPAUTO_Y_LINE(row), INTINGAMEOP_OP_W, _("Quit"), OPALIGN);
+		addAdaptiveButton(INTINGAMEOP_CONFIRM_QUIT, row, _("Quit"), OPALIGN);
 	}
 
-	// calculate layout
+	// Screen-adaptive layout: scales with screen size so the menu is readable on
+	// large displays (e.g. Android) without being oversized on small ones.
 	int lines = row;
-	ingameOp->setCalcLayout([lines](WIDGET *psWidget){
-		psWidget->setGeometry(INTINGAMEOP_X, INTINGAMEOPAUTO_Y(lines), INTINGAMEOP_W, INTINGAMEOPAUTO_H(lines));
+	ingameOp->setCalcLayout([lines](WIDGET *psWidget) {
+		int menuW   = std::max((int)INTINGAMEOP_W,      (int)screenWidth  / 4);
+		int lineH   = std::max((int)INTINGAMEOPLINE_H,  (int)screenHeight / 18);
+		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
+		int menuH   = lines * lineH + marginH * 2;
+		int menuX   = ((int)screenWidth  - menuW) / 2;
+		int menuY   = ((int)screenHeight - menuH) / 2;
+		psWidget->setGeometry(menuX, menuY, menuW, menuH);
 	});
+	// attach() does not trigger calcLayout on children; fire it now so buttons
+	// get their adaptive width/font from the correctly-sized form.
+	ingameOp->screenSizeDidChange(screenWidth, screenHeight, screenWidth, screenHeight);
 
 	intMode		= INT_INGAMEOP;			// change interface mode.
 	InGameOpUp	= true;					// inform interface.
@@ -325,7 +375,7 @@ void intAddInGamePopup()
 	parent->attach(ingamePopup);
 	ingamePopup->id = INTINGAMEPOPUP;
 	ingamePopup->setCalcLayout(LAMBDA_CALCLAYOUT_SIMPLE({
-		psWidget->setGeometry(20 + D_W, (240 - 160 / 2) + D_H, 600, 160);
+		psWidget->setGeometry(20 + D_W, (240 - 220 / 2) + D_H, 680, 220);
 	}));
 
 	// add the text "buttons" now
@@ -333,10 +383,10 @@ void intAddInGamePopup()
 
 	sButInit.formID		= INTINGAMEPOPUP;
 	sButInit.style		= OPALIGN;
-	sButInit.width		= 600;
+	sButInit.width		= 680;
 	sButInit.FontID		= font_large;
 	sButInit.x			= 0;
-	sButInit.height		= 10;
+	sButInit.height		= 14;
 	sButInit.pDisplay	= displayTextOption;
 	sButInit.initPUserDataFunc = []() -> void * { return new DisplayTextOptionCache(); };
 	sButInit.onDelete = [](WIDGET *psWidget) {
@@ -346,19 +396,19 @@ void intAddInGamePopup()
 	};
 
 	sButInit.id			= INTINGAMEOP_POPUP_MSG2;
-	sButInit.y			= 20;
+	sButInit.y			= 28;
 	sButInit.pText		= _("Host has quit the game!");
 
 	widgAddButton(psWScreen, &sButInit);
 
 	sButInit.id			= INTINGAMEOP_POPUP_MSG1;
-	sButInit.y			= 60;
+	sButInit.y			= 84;
 	sButInit.pText		= _("The game can't continue without the host.");
 
 	widgAddButton(psWScreen, &sButInit);
 
 	sButInit.id			= INTINGAMEOP_POPUP_QUIT;
-	sButInit.y			= 124;
+	sButInit.y			= 172;
 	sButInit.pText		= _("-->  QUIT  <--");
 
 	widgAddButton(psWScreen, &sButInit);
