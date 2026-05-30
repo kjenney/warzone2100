@@ -110,7 +110,7 @@ static void addAdaptiveButton(UDWORD id, int row, const char *string, UDWORD Sty
 	sButInit.height   = INTINGAMEOP_OP_H;
 	sButInit.pDisplay = displayTextOption;
 	sButInit.pText    = string;
-	sButInit.FontID   = font_medium; // overridden by calcLayout; avoids tiny text on first frame
+	sButInit.FontID   = font_large; // overridden by calcLayout; set large upfront so first frame looks right
 	sButInit.pUserData = new DisplayTextOptionCache();
 	sButInit.onDelete = [](WIDGET *psWidget) {
 		assert(psWidget->pUserData != nullptr);
@@ -262,7 +262,7 @@ static bool _intAddInGameOptions()
 	// large displays (e.g. Android) without being oversized on small ones.
 	int lines = row;
 	ingameOp->setCalcLayout([lines](WIDGET *psWidget) {
-		int menuW   = std::max((int)INTINGAMEOP_W,    (int)screenWidth  / 3);
+		int menuW   = std::max((int)INTINGAMEOP_W,      (int)screenWidth  / 4);
 		int lineH   = std::max((int)INTINGAMEOPLINE_H,  (int)screenHeight / 18);
 		int marginH = std::max((int)INTINGAMEOPMARGIN_H, lineH / 2);
 		int menuH   = lines * lineH + marginH * 2;
@@ -270,6 +270,9 @@ static bool _intAddInGameOptions()
 		int menuY   = ((int)screenHeight - menuH) / 2;
 		psWidget->setGeometry(menuX, menuY, menuW, menuH);
 	});
+	// attach() does not trigger calcLayout on children; fire it now so buttons
+	// get their adaptive width/font from the correctly-sized form.
+	ingameOp->screenSizeDidChange(screenWidth, screenHeight, screenWidth, screenHeight);
 
 	intMode		= INT_INGAMEOP;			// change interface mode.
 	InGameOpUp	= true;					// inform interface.
